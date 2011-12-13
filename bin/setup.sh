@@ -1,3 +1,2 @@
 #!/bin/bash
-export AZURE_ACCOUNT_NAME=<YOUR ACCOUNT NAME>
-export AZURE_ACCOUNT_KEY=<YOUR ACCOUNT KEY>
+export AZURE_CONNECTION_STRING="DefaultEndpointsProtocol=https;AccountName=your_storage_account;AccountKey=your_storage_account_key"

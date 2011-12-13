@@ -1,7 +1,7 @@
-import java.net.URI;
-import java.io.File;
-import org.soyatec.windowsazure.blob.*; 
-import org.soyatec.windowsazure.internal.util.TimeSpan;
+
+import java.io.*;
+import com.microsoft.windowsazure.services.core.storage.*; 
+import com.microsoft.windowsazure.services.blob.client.*; 
 
 public class PutBlob
 {
@@ -12,37 +12,27 @@ public class PutBlob
 	    System.exit(1);
 	}
 
-	String accountName = System.getenv("AZURE_ACCOUNT_NAME");
+	String storageConnectionString = System.getenv("AZURE_CONNECTION_STRING");
             
-	if (accountName == null) {
-	    System.err.println("AZURE_ACCOUNT_NAME not set");
+	if (storageConnectionString == null) {
+	    System.err.println("AZURE_CONNECTION_STRING not set");
 	    System.exit(1);
-	}
-
-	String accountKey = System.getenv("AZURE_ACCOUNT_KEY");
-            
-	if (accountKey == null) {
-	    System.exit(1);
-	    System.err.println("AZURE_ACCOUNT_KEY not set");
 	}
 
 	String containerName = args[0];
-	String blobName = args[1];
+	String fileName = args[1];
 
-	BlobStorageClient storage = BlobStorageClient
-        .create(
-            URI.create("http://blob.core.windows.net"),
-            false,
-            accountName ,
-            accountKey);
+	CloudStorageAccount storageAccount = CloudStorageAccount.parse(storageConnectionString);
 
-	IBlobContainer container = storage.getBlobContainer(containerName);
+	CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
+	
+	CloudBlobContainer container = blobClient.getContainerReference(containerName);
+	container.createIfNotExist();
 
-	IBlobProperties blobProperties = storage.createBlobProperties(blobName);
-	blobProperties.setContentType("binary/octet-stream");
+	CloudBlockBlob blob = container.getBlockBlobReference(fileName);
+	File source = new File(fileName);
+	blob.upload(new FileInputStream(source), source.length());
 
-	IBlobContents blobContents = storage.createBlobContents(new File(blobName));
 
-	IBlockBlob blockBlob = container.createBlockBlob(blobProperties, blobContents);
     }  
 }

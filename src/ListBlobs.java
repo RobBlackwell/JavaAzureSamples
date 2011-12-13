@@ -1,8 +1,5 @@
-import java.net.URI;
-import java.io.File;
-import java.util.Iterator;
-import org.soyatec.windowsazure.blob.*; 
-import org.soyatec.windowsazure.internal.util.TimeSpan;
+import com.microsoft.windowsazure.services.core.storage.*; 
+import com.microsoft.windowsazure.services.blob.client.*; 
 
 public class ListBlobs
 {
@@ -13,36 +10,24 @@ public class ListBlobs
 	    System.exit(1);
 	}
 
-	String accountName = System.getenv("AZURE_ACCOUNT_NAME");
+	String storageConnectionString = System.getenv("AZURE_CONNECTION_STRING");
             
-	if (accountName == null) {
-	    System.err.println("AZURE_ACCOUNT_NAME not set");
+	if (storageConnectionString == null) {
+	    System.err.println("AZURE_CONNECTION_STRING not set");
 	    System.exit(1);
-	}
-
-	String accountKey = System.getenv("AZURE_ACCOUNT_KEY");
-            
-	if (accountKey == null) {
-	    System.exit(1);
-	    System.err.println("AZURE_ACCOUNT_KEY not set");
 	}
 
 	String containerName = args[0];
 
-	BlobStorageClient storage = BlobStorageClient
-        .create(
-            URI.create("http://blob.core.windows.net"),
-            false,
-            accountName ,
-            accountKey);
+	CloudStorageAccount storageAccount = CloudStorageAccount.parse(storageConnectionString);
 
-	IBlobContainer container = storage.getBlobContainer(containerName);
+	CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
+	
+	CloudBlobContainer container = blobClient.getContainerReference(containerName);
 
-	Iterator blobs  = container.listBlobs();
+	for (ListBlobItem blobItem : container.listBlobs()) {
+	    System.out.println(blobItem.getUri());
+	}
 
-	while(blobs.hasNext()) {
-	    Object element = blobs.next(); 
-	    System.out.println(((IBlobProperties)element).getName());
-	} 
     }  
 }
